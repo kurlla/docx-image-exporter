@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOCX 图片批量导出工具</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus/dist/index.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fa;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 40px;
+        }
+
+        #app {
+            max-width: 1000px;
+            width: 90%;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        .el-upload-dragger {
+            width: 600px !important;
+            height: 240px !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            border: 2px dashed #d9d9d9;
+            background-color: #fafafa;
+            transition: border-color 0.3s;
+        }
+
+        .el-upload-dragger:hover {
+            border-color: #409EFF;
+        }
+
+        .el-icon-upload {
+            font-size: 67px;
+            color: #c0c4cc;
+            line-height: 1;
+        }
+
+        .el-upload__text {
+            color: #606266;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .el-upload-dragger.has-file {
+            border-color: #67c23a;
+        }
+
+        .file-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 100%;
+            padding: 10px 0;
+            box-sizing: border-box;
+        }
+
+        .file-info .word-icon {
+            margin-bottom: 10px;
+        }
+
+        .file-info .file-name {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+
+        .file-info .el-upload__text {
+            margin-top: 5px;
+        }
+
+        .word-icon {
+            font-size: 60px;
+            color: #409EFF;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            max-width: 90%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .el-alert {
+            width: 600px !important;
+            margin-top: 20px !important;
+            border-radius: 8px;
+        }
+
+        .extract-button-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 40px;
+        }
+
+        .el-button--primary {
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+        }
+
+        .main-action-button {
+            min-width: 200px;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 8px;
+        }
+
+        .image-results-section {
+            margin-top: 0;
+            padding-top: 0;
+        }
+
+        .el-divider {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .file-image-group {
+            border: 1px solid #ebeef5;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+            background-color: #fcfdff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #e6e6e6;
+            flex-wrap: wrap;
+        }
+
+        .group-header h3 {
+            margin: 0;
+            color: #303133;
+            font-size: 20px;
+            flex-grow: 1;
+            margin-right: 15px;
+        }
+
+        .download-buttons-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .download-buttons-group .el-button {
+            font-size: 14px;
+            padding: 10px 18px;
+            border-radius: 6px;
+        }
+
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            justify-items: center;
+        }
+
+        .image-item {
+            width: 120px;
+            height: 120px;
+            overflow: hidden;
+            border: 1px solid #ebeef5;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .image-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .image-item img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .el-empty {
+            margin-top: 50px;
+        }
+
+        .overall-download-section {
+            text-align: center;
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+            margin-bottom: 40px;
+        }
+
+        .overall-download-section p {
+            font-size: 12px;
+            color: #909399;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/element-plus"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@element-plus/icons-vue"></script>
+
+    <script type="module">
+        const { createApp, ref, computed, nextTick } = Vue;
+        const { ElMessage, ElUpload, ElAlert, ElButton, ElDivider, ElEmpty } = ElementPlus;
+        const { Upload, Document, PictureFilled, FolderOpened, Folder, Download } = ElementPlusIconsVue;
+
+        createApp({
+            components: {
+                ElUpload,
+                ElAlert,
+                ElButton,
+                ElDivider,
+                ElEmpty,
+                // Element Plus Icons
+                Upload,
+                Document,
+                PictureFilled,
+                FolderOpened,
+                Folder,
+                Download
+            },
+            setup() {
+                const fileList = ref([]);
+                const extractedResults = ref([]);
+                const isExtracting = ref(false);
+                const isDownloadingAll = ref(false);
+
+                const hasAnyImages = computed(() => {
+                    return extractedResults.value.some(result => result.images.length > 0);
+                });
+
+                const handleFileChange = (uploadFile, uploadFiles) => {
+                    fileList.value = uploadFiles.filter(f => f.name.endsWith('.docx'));
+                    if (fileList.value.length !== uploadFiles.length) {
+                        ElMessage.warning('已自动过滤非 DOCX 文件。');
+                    }
+                    extractedResults.value = [];
+                };
+
+                const handleFileRemove = (uploadFile, uploadFiles) => {
+                    fileList.value = uploadFiles;
+                    extractedResults.value = extractedResults.value.filter(result => result.file !== uploadFile.raw);
+                };
+
+                const extractAllImages = async () => {
+                    if (fileList.value.length === 0) {
+                        ElMessage.warning('请先选择至少一个 DOCX 文件。');
+                        return;
+                    }
+
+                    isExtracting.value = true;
+                    extractedResults.value = []; 
+
+                    for (const file of fileList.value) {
+                        await extractImagesFromFile(file.raw); 
+                    }
+
+                    isExtracting.value = false;
+                    ElMessage.success('所有文件图片提取完成！');
+                };
+
+                const extractImagesFromFile = async (file) => {
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = async (event) => {
+                            let imagesForFile = [];
+                            try {
+                                const zip = await JSZip.loadAsync(event.target.result);
+                                let imageCount = 0;
+
+                                const imagePromises = [];
+                                zip.forEach((relativePath, zipEntry) => {
+                                    if (relativePath.startsWith('word/media/') && !zipEntry.dir && !relativePath.includes('__MACOSX')) {
+                                        const fileName = relativePath.substring(relativePath.lastIndexOf('/') + 1);
+                                        const fileExtension = fileName.split('.').pop().toLowerCase();
+
+                                        if (['png', 'jpg', 'jpeg', 'gif', 'bmp', 'tiff', 'webp'].includes(fileExtension)) {
+                                            imagePromises.push(
+                                                zipEntry.async('blob').then(blob => {
+                                                    const imageUrl = URL.createObjectURL(blob);
+                                                    imagesForFile.push({
+                                                        name: fileName,
+                                                        url: imageUrl,
+                                                        blob: blob 
+                                                    });
+                                                })
+                                            );
+                                            imageCount++;
+                                        }
+                                    }
+                                });
+
+                                await Promise.all(imagePromises);
+
+                                extractedResults.value.push({
+                                    fileName: file.name,
+                                    file: file,
+                                    images: imagesForFile,
+                                    isDownloadingZip: false, 
+                                    isDownloadingIndividual: false
+                                });
+
+                                if (imageCount === 0) {
+                                    ElMessage({
+                                        message: `"${file.name}": 未找到图片。`,
+                                        type: 'info'
+                                    });
+                                }
+
+                            } catch (error) {
+                                console.error(`处理文件 "${file.name}" 时出错:`, error);
+                                ElMessage.error(`处理文件 "${file.name}" 时出错，请确保是有效的 DOCX 文件。`);
+                            }
+                            resolve();
+                        };
+                        reader.readAsArrayBuffer(file);
+                    });
+                };
+
+                const downloadAllImagesForFile = async (fileName, images) => {
+                    const result = extractedResults.value.find(r => r.fileName === fileName);
+                    if (result) {
+                        result.isDownloadingZip = true;
+                    }
+
+                    if (images.length === 0) {
+                        ElMessage.info(`"${fileName}": 没有图片可供下载。`);
+                        if (result) {
+                            result.isDownloadingZip = false;
+                        }
+                        return;
+                    }
+
+                    try {
+                        const zip = new JSZip();
+                        images.forEach(image => {
+                            zip.file(image.name, image.blob); 
+                        });
+
+                        const content = await zip.generateAsync({ type: 'blob' });
+                        saveAs(content, `${fileName.replace('.docx', '')}_images.zip`);
+                        ElMessage.success(`"${fileName}": 图片已打包下载！`);
+                    } catch (error) {
+                        console.error(`打包下载 "${fileName}" 的图片时出错:`, error);
+                        ElMessage.error(`打包下载 "${fileName}" 的图片时出错。`);
+                    } finally {
+                        if (result) {
+                            result.isDownloadingZip = false;
+                        }
+                    }
+                };
+
+                const downloadImagesIndividually = async (fileName, images) => {
+                    const result = extractedResults.value.find(r => r.fileName === fileName);
+                    if (result) {
+                        result.isDownloadingIndividual = true;
+                    }
+
+                    if (images.length === 0) {
+                        ElMessage.info(`"${fileName}": 没有图片可供下载。`);
+                        if (result) {
+                            result.isDownloadingIndividual = false;
+                        }
+                        return;
+                    }
+
+                    try {
+                        for (const image of images) {
+                            const a = document.createElement('a');
+                            a.href = image.url;
+                            a.download = image.name;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            await new Promise(resolve => setTimeout(resolve, 50));
+                        }
+                        ElMessage.success(`"${fileName}": 所有图片已开始下载！`);
+                    } catch (error) {
+                        console.error(`直接下载 "${fileName}" 的图片时出错:`, error);
+                        ElMessage.error(`直接下载 "${fileName}" 的图片时出错。`);
+                    } finally {
+                        if (result) {
+                            result.isDownloadingIndividual = false;
+                        }
+                    }
+                };
+
+                const downloadAllExtractedImagesCombined = async () => {
+                    isDownloadingAll.value = true;
+                    try {
+                        const zip = new JSZip();
+                        let totalImagesCount = 0;
+
+                        extractedResults.value.forEach(result => {
+                            result.images.forEach(image => {
+                                const folderName = result.fileName.replace(/\.docx$/i, '');
+                                const safeFolderName = folderName.replace(/[\/\\?%*:|"<>]/g, '_');
+                                zip.file(`${safeFolderName}/${image.name}`, image.blob);
+                                totalImagesCount++;
+                            });
+                        });
+
+                        if (totalImagesCount === 0) {
+                            ElMessage.info('没有提取到任何图片，无需下载。');
+                            isDownloadingAll.value = false;
+                            return;
+                        }
+
+                        const content = await zip.generateAsync({ type: 'blob' });
+                        saveAs(content, `所有DOCX图片_${new Date().toLocaleDateString('zh-CN').replace(/\//g, '-')}.zip`);
+                        ElMessage.success(`所有 ${totalImagesCount} 张图片已打包下载！`);
+
+                    } catch (error) {
+                        console.error('打包下载所有图片时出错:', error);
+                        ElMessage.error('打包下载所有图片时出错。');
+                    } finally {
+                        isDownloadingAll.value = false;
+                    }
+                };
+
+                return {
+                    fileList,
+                    extractedResults,
+                    isExtracting,
+                    isDownloadingAll,
+                    hasAnyImages,
+                    handleFileChange,
+                    handleFileRemove,
+                    extractAllImages,
+                    downloadAllImagesForFile,
+                    downloadImagesIndividually,
+                    downloadAllExtractedImagesCombined,
+                    Upload,
+                    Document,
+                    PictureFilled,
+                    FolderOpened,
+                    Folder,
+                    Download
+                };
+            },
+            template: `
+                <h1>DOCX 图片批量导出工具</h1>
+
+                <div class="upload-section">
+                    <el-upload
+                        class="upload-dragger"
+                        drag
+                        action=""
+                        multiple
+                        :auto-upload="false"
+                        @change="handleFileChange"
+                        @remove="handleFileRemove"
+                        :file-list="fileList"
+                        list-type="text"
+                        accept=".docx"
+                        :class="{'has-file': fileList.length > 0}"
+                    >
+                        <el-icon v-if="fileList.length === 0" class="el-icon-upload"><Upload /></el-icon>
+                        <div v-if="fileList.length === 0" class="el-upload__text">将 DOCX 文件拖到此处，或<em>点击上传</em></div>
+                        <div v-else class="file-info">
+                            <el-icon class="word-icon"><Document /></el-icon>
+                            <div class="file-name">已选择 **{{ fileList.length }}** 个文件</div>
+                            <div class="el-upload__text" style="margin-top: 5px;">点击或拖拽文件可继续添加/修改</div>
+                        </div>
+                    </el-upload>
+                    <el-alert
+                        v-if="fileList.length > 0"
+                        title="文件已选择，点击下方按钮开始提取图片。"
+                        type="success"
+                        show-icon
+                        :closable="false"
+                    ></el-alert>
+                </div>
+
+                <div class="extract-button-container">
+                    <el-button
+                        type="primary"
+                        :disabled="fileList.length === 0"
+                        @click="extractAllImages"
+                        :loading="isExtracting"
+                        class="main-action-button"
+                    >
+                        <el-icon><PictureFilled /></el-icon> {{ isExtracting ? '正在提取图片...' : '开始提取所有图片' }}
+                    </el-button>
+                </div>
+
+                <el-divider v-if="extractedResults.length > 0"></el-divider>
+
+                <div class="image-results-section" v-if="extractedResults.length > 0">
+                    <div class="overall-download-section" v-if="fileList.length > 1 && hasAnyImages">
+                        <el-button
+                            type="warning"
+                            @click="downloadAllExtractedImagesCombined"
+                            :loading="isDownloadingAll"
+                            :disabled="isDownloadingAll"
+                            class="main-action-button"
+                        >
+                            <el-icon><FolderOpened /></el-icon> {{ isDownloadingAll ? '正在打包所有图片...' : '下载所有文档图片压缩包' }}
+                        </el-button>
+                        <p v-if="isDownloadingAll" style="font-size: 12px; color: #909399; margin-top: 5px;">图片较多时可能需要较长时间</p>
+                    </div>
+
+                    <div v-for="(result, index) in extractedResults" :key="index" class="file-image-group">
+                        <div class="group-header">
+                            <h3>文件: **{{ result.fileName }}** (共 **{{ result.images.length }}** 张图片)</h3>
+                            <div class="download-buttons-group">
+                                <el-button
+                                    type="info"
+                                    size="small"
+                                    @click="downloadImagesIndividually(result.fileName, result.images)"
+                                    :loading="result.isDownloadingIndividual"
+                                    :disabled="result.images.length === 0 || result.isDownloadingIndividual"
+                                >
+                                    <el-icon><Download /></el-icon> {{ result.isDownloadingIndividual ? '正在下载...' : '直接下载所有图片' }}
+                                </el-button>
+
+                                <el-button
+                                    type="success"
+                                    size="small"
+                                    @click="downloadAllImagesForFile(result.fileName, result.images)"
+                                    :loading="result.isDownloadingZip"
+                                    :disabled="result.images.length === 0 || result.isDownloadingZip"
+                                >
+                                    <el-icon><Folder /></el-icon> {{ result.isDownloadingZip ? '正在打包...' : '打包下载所有图片' }}
+                                </el-button>
+                            </div>
+                        </div>
+                        <div v-if="result.images.length > 0" class="image-grid">
+                            <div v-for="(image, imgIndex) in result.images" :key="imgIndex" class="image-item">
+                                <a :href="image.url" :download="image.name" target="_blank">
+                                    <img :src="image.url" :alt="image.name" :title="image.name">
+                                </a>
+                            </div>
+                        </div>
+                        <el-empty v-else description="未在该文件中找到图片"></el-empty>
+                    </div>
+                </div>
+
+                <el-empty v-if="!isExtracting && extractedResults.length === 0 && fileList.length === 0" description="请选择 DOCX 文件开始提取图片"></el-empty>
+            `
+        }).mount('#app');
+    </script>
+</body>
+
+</html>
